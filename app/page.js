@@ -1,9 +1,9 @@
 "use client";
 import React, { useState } from "react";
-import '@fontsource/roboto/300.css';
-import '@fontsource/roboto/400.css';
-import '@fontsource/roboto/500.css';
-import '@fontsource/roboto/700.css';
+import "@fontsource/roboto/300.css";
+import "@fontsource/roboto/400.css";
+import "@fontsource/roboto/500.css";
+import "@fontsource/roboto/700.css";
 
 import {
   AppBar,
@@ -75,26 +75,29 @@ export default function Home() {
   const [items, setItems] = useState([]);
   const [newItem, setNewItem] = useState("");
   const [editIndex, setEditIndex] = useState(null);
+  const [searchItem, setSearchItem] = useState("");
 
   const handleAddClick = () => {
     if (newItem.trim() !== "") {
-      if(editIndex!==null)
-        {
-          const updatedItems = items.map((item,index) =>
-          editIndex!==index ? item:newItem
-          );
-          setItems(updatedItems);
-          setEditIndex(null);
-        }
-        else{
-      setItems([...items, newItem]);
-        }
+      if (editIndex !== null) {
+        const updatedItems = items.map((item, index) =>
+          editIndex !== index ? item : newItem
+        );
+        setItems(updatedItems);
+        setEditIndex(null);
+      } else {
+        setItems([...items, newItem]);
+      }
       setNewItem("");
     }
   };
 
   const handleInputChange = (event) => {
     setNewItem(event.target.value);
+  };
+
+  const handleSearch = (event) => {
+    setSearchItem(event.target.value);
   };
 
   const handleDeleteClick = (index) => {
@@ -106,8 +109,10 @@ export default function Home() {
   const handleEditClick = (index) => {
     setEditIndex(index);
     setNewItem(items[index]);
-
-  }
+  };
+  const filteredItems = items.filter((item) =>
+    item.toLowerCase().includes(searchItem.toLowerCase())
+  );
 
   return (
     <>
@@ -128,6 +133,8 @@ export default function Home() {
             <StyledInputBase
               placeholder="Search…"
               inputProps={{ "aria-label": "search" }}
+              onChange={handleSearch}
+              value={searchItem}
             />
           </Search>
         </Toolbar>
@@ -141,8 +148,19 @@ export default function Home() {
         justifyContent="center"
         bgcolor=""
       >
-        <Box height="500px" width="700px" bgcolor="" padding={2} overflow="auto">
-          <Grid container spacing={2} alignItems="center" justifyContent="center">
+        <Box
+          height="500px"
+          width="700px"
+          bgcolor=""
+          padding={2}
+          overflow="auto"
+        >
+          <Grid
+            container
+            spacing={2}
+            alignItems="center"
+            justifyContent="center"
+          >
             <Grid item xs={12} md={8}>
               <TextField
                 fullWidth
@@ -154,9 +172,18 @@ export default function Home() {
               />
             </Grid>
             <Grid item xs={12} md={3}>
-              <Button variant="contained" fullWidth onClick={handleAddClick}  sx={{bgcolor:"#7C73C0","&:hover": {
-      bgcolor: "#7C73C0",}}}>
-                {editIndex!==null ? "Update":"Add"}
+              <Button
+                variant="contained"
+                fullWidth
+                onClick={handleAddClick}
+                sx={{
+                  bgcolor: "#7C73C0",
+                  "&:hover": {
+                    bgcolor: "#7C73C0",
+                  },
+                }}
+              >
+                {editIndex !== null ? "Update" : "Add"}
               </Button>
             </Grid>
           </Grid>
@@ -165,26 +192,37 @@ export default function Home() {
             <Table aria-label="simple table">
               <TableHead>
                 <TableRow>
-                  <TableCell><Typography variant='h5'>Pantry Item</Typography></TableCell>
-                  <TableCell align="center"><Typography variant='h5'>Edit</Typography></TableCell>
-                  <TableCell align="center"><Typography variant='h5'>Delete</Typography></TableCell>
+                  <TableCell>
+                    <Typography variant="h5">Pantry Item</Typography>
+                  </TableCell>
+                  <TableCell align="center">
+                    <Typography variant="h5">Edit</Typography>
+                  </TableCell>
+                  <TableCell align="center">
+                    <Typography variant="h5">Delete</Typography>
+                  </TableCell>
                 </TableRow>
               </TableHead>
               <TableBody>
-                {items.map((item,index) => (
+                {filteredItems.map((item, index) => (
                   <TableRow key={index}>
-                    
-                    <TableCell component="th" scope="row"><Typography variant = "h6">{item}</Typography>
-                      
+                    <TableCell component="th" scope="row">
+                      <Typography variant="h6">{item}</Typography>
                     </TableCell>
                     <TableCell align="center">
-                      <IconButton color="primary" onClick={() => handleEditClick(index)}>
+                      <IconButton
+                        color="primary"
+                        onClick={() => handleEditClick(index)}
+                      >
                         <EditIcon />
                       </IconButton>
                     </TableCell>
                     <TableCell align="center">
-                      <IconButton sx={{ color: "red" }} onClick={() => handleDeleteClick(index)}>
-                      <DeleteIcon fontSize="small"/>
+                      <IconButton
+                        sx={{ color: "red" }}
+                        onClick={() => handleDeleteClick(index)}
+                      >
+                        <DeleteIcon fontSize="small" />
                       </IconButton>
                     </TableCell>
                   </TableRow>
