@@ -74,10 +74,21 @@ const StyledInputBase = styled(InputBase)(({ theme }) => ({
 export default function Home() {
   const [items, setItems] = useState([]);
   const [newItem, setNewItem] = useState("");
+  const [editIndex, setEditIndex] = useState(null);
 
   const handleAddClick = () => {
     if (newItem.trim() !== "") {
+      if(editIndex!==null)
+        {
+          const updatedItems = items.map((item,index) =>
+          editIndex!==index ? item:newItem
+          );
+          setItems(updatedItems);
+          setEditIndex(null);
+        }
+        else{
       setItems([...items, newItem]);
+        }
       setNewItem("");
     }
   };
@@ -91,6 +102,12 @@ export default function Home() {
     newItems.splice(index, 1);
     setItems(newItems);
   };
+
+  const handleEditClick = (index) => {
+    setEditIndex(index);
+    setNewItem(items[index]);
+
+  }
 
   return (
     <>
@@ -137,8 +154,9 @@ export default function Home() {
               />
             </Grid>
             <Grid item xs={12} md={3}>
-              <Button variant="contained" fullWidth onClick={handleAddClick} sx={{bgcolor:"#7C73C0"}}>
-                Add
+              <Button variant="contained" fullWidth onClick={handleAddClick}  sx={{bgcolor:"#7C73C0","&:hover": {
+      bgcolor: "#7C73C0",}}}>
+                {editIndex!==null ? "Update":"Add"}
               </Button>
             </Grid>
           </Grid>
@@ -160,7 +178,7 @@ export default function Home() {
                       
                     </TableCell>
                     <TableCell align="center">
-                      <IconButton color="primary">
+                      <IconButton color="primary" onClick={() => handleEditClick(index)}>
                         <EditIcon />
                       </IconButton>
                     </TableCell>
