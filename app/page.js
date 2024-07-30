@@ -31,6 +31,13 @@ export default function Home() {
     setNewItem(event.target.value);
   };
 
+  const handleDeleteClick = (index) => {
+        const newItems = [...items]
+        newItems.splice(index,1);
+        addItems(newItems); 
+      
+  }
+
   return (
     <Box
       height="100vh"
@@ -69,8 +76,9 @@ export default function Home() {
               </TableRow>
             </TableHead>
             <TableBody>
-              {items.map((item) => (
-                <TableRow key={item}>
+              {items.map((item,index) => (
+                <TableRow key={index}>
+                  
                   <TableCell component="th" scope="row">
                     {item}
                   </TableCell>
@@ -80,7 +88,7 @@ export default function Home() {
                     </IconButton>
                   </TableCell>
                   <TableCell align="center">
-                    <IconButton sx={{ color: "red" }}>
+                    <IconButton sx={{ color: "red" }} onClick={() => handleDeleteClick(index)}>
                       <DeleteIcon />
                     </IconButton>
                   </TableCell>
