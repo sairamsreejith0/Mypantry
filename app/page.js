@@ -1,10 +1,35 @@
-import React from 'react';
-import { Box, Grid, TextField, Button, TableBody, Table, TableCell, TableHead, TableRow, IconButton, TableContainer, Paper } from '@mui/material';
-import DeleteIcon from '@mui/icons-material/Delete';
-import EditIcon from '@mui/icons-material/Edit';
+"use client";
+import React, { useState } from "react";
+import {
+  Box,
+  Grid,
+  TextField,
+  Button,
+  TableBody,
+  Table,
+  TableCell,
+  TableHead,
+  TableRow,
+  IconButton,
+  TableContainer,
+  Paper,
+} from "@mui/material";
+import DeleteIcon from "@mui/icons-material/Delete";
+import EditIcon from "@mui/icons-material/Edit";
 
 export default function Home() {
-  const items = ["tomatoes", "bananas", "apples"];
+  const [items, addItems] = useState([]);
+  const [newItem, setNewItem] = useState("");
+
+  const handleAddClick = () => {
+    if (newItem.trim() !== "") {
+      addItems([...items, newItem]);
+      setNewItem("");
+    }
+  };
+  const handleInputChange = (event) => {
+    setNewItem(event.target.value);
+  };
 
   return (
     <Box
@@ -15,13 +40,7 @@ export default function Home() {
       justifyContent="center"
       bgcolor=""
     >
-      <Box
-        height="500px"
-        width="500px"
-        bgcolor=""
-        padding={2}
-        overflow="auto"
-      >
+      <Box height="500px" width="500px" bgcolor="" padding={2} overflow="auto">
         <Grid container spacing={2} alignItems="center" justifyContent="center">
           <Grid item xs={12} md={8}>
             <TextField
@@ -29,10 +48,12 @@ export default function Home() {
               id="outlined-basic"
               label="Outlined"
               variant="outlined"
+              value={newItem}
+              onChange={handleInputChange}
             />
           </Grid>
           <Grid item xs={12} md={3}>
-            <Button variant="contained" fullWidth>
+            <Button variant="contained" fullWidth onClick={handleAddClick}>
               Add
             </Button>
           </Grid>
@@ -59,7 +80,7 @@ export default function Home() {
                     </IconButton>
                   </TableCell>
                   <TableCell align="center">
-                    <IconButton sx={{color:"red"}}>
+                    <IconButton sx={{ color: "red" }}>
                       <DeleteIcon />
                     </IconButton>
                   </TableCell>
