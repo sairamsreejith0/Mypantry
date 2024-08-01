@@ -4,16 +4,15 @@ import "@fontsource/roboto/300.css";
 import "@fontsource/roboto/400.css";
 import "@fontsource/roboto/500.css";
 import "@fontsource/roboto/700.css";
-
 import {
   AppBar,
   Toolbar,
   Typography,
   Box,
   Grid,
-  TextField,
   Button,
   TableBody,
+  TextField,
   Table,
   TableCell,
   TableHead,
@@ -23,6 +22,7 @@ import {
   Paper,
   InputBase,
   alpha,
+  Modal,
 } from "@mui/material";
 import { styled } from "@mui/material/styles";
 import SearchIcon from "@mui/icons-material/Search";
@@ -58,7 +58,6 @@ const StyledInputBase = styled(InputBase)(({ theme }) => ({
   color: "inherit",
   "& .MuiInputBase-input": {
     padding: theme.spacing(1, 1, 1, 0),
-    // vertical padding + font size from searchIcon
     paddingLeft: `calc(1em + ${theme.spacing(4)})`,
     transition: theme.transitions.create("width"),
     width: "100%",
@@ -71,24 +70,61 @@ const StyledInputBase = styled(InputBase)(({ theme }) => ({
   },
 }));
 
+const modalStyle = {
+  position: "absolute",
+  top: "50%",
+  left: "50%",
+  transform: "translate(-50%, -50%)",
+  width: 400,
+  bgcolor: "background.paper",
+  boxShadow: 24,
+  p: 4,
+};
+
 export default function Home() {
   const [items, setItems] = useState([]);
   const [newItem, setNewItem] = useState("");
   const [editIndex, setEditIndex] = useState(null);
   const [searchItem, setSearchItem] = useState("");
+  const [open, setOpen] = useState(false);
+  const [quantity, setQuantity] = useState(1);
+
+  const handleOpen = (index = null) => {
+    if (index !== null) {
+      setNewItem(items[index].name);
+      setQuantity(items[index].quantity);
+      setEditIndex(index);
+    } else {
+      setNewItem("");
+      setQuantity(1);
+      setEditIndex(null);
+    }
+    setOpen(true);
+  };
+
+  const handleClose = () => setOpen(false);
 
   const handleAddClick = () => {
     if (newItem.trim() !== "") {
-      if (editIndex !== null) {
+      
+      const existingItemIndex = items.findIndex(item => item.name.toLowerCase() === newItem.toLowerCase());
+      if (existingItemIndex !== -1 && editIndex === null) {
         const updatedItems = items.map((item, index) =>
-          editIndex !== index ? item : newItem
+          index === existingItemIndex ? { ...item, quantity: item.quantity + quantity } : item
         );
         setItems(updatedItems);
-        setEditIndex(null);
+      } else if (editIndex !== null) {
+        const updatedItems = items.map((item, index) =>
+          index === editIndex ? { name: newItem, quantity } : item
+        );
+        setItems(updatedItems);
       } else {
-        setItems([...items, newItem]);
+        setItems([...items, { name: newItem, quantity }]);
       }
       setNewItem("");
+      setQuantity(1);
+      setEditIndex(null);
+      handleClose();
     }
   };
 
@@ -107,12 +143,15 @@ export default function Home() {
   };
 
   const handleEditClick = (index) => {
-    setEditIndex(index);
-    setNewItem(items[index]);
+    handleOpen(index);
   };
+
   const filteredItems = items.filter((item) =>
-    item.toLowerCase().includes(searchItem.toLowerCase())
+    item.name.toLowerCase().includes(searchItem.toLowerCase())
   );
+
+  const incrementQuantity = () => setQuantity(quantity + 1);
+  const decrementQuantity = () => setQuantity(quantity > 1 ? quantity - 1 : 1);
 
   return (
     <>
@@ -120,7 +159,7 @@ export default function Home() {
         <Toolbar>
           <Typography variant="h6" noWrap component="div">
             <img
-              src="/logo.png" // Replace with your logo URL
+              src="/logo.png"
               alt="Logo"
               style={{ marginRight: "10px", width: "110px", height: "40px" }}
             />
@@ -161,21 +200,11 @@ export default function Home() {
             alignItems="center"
             justifyContent="center"
           >
-            <Grid item xs={12} md={8}>
-              <TextField
-                fullWidth
-                id="outlined-basic"
-                label="enter item name"
-                variant="outlined"
-                value={newItem}
-                onChange={handleInputChange}
-              />
-            </Grid>
             <Grid item xs={12} md={3}>
               <Button
                 variant="contained"
                 fullWidth
-                onClick={handleAddClick}
+                onClick={() => handleOpen()}
                 sx={{
                   bgcolor: "#7C73C0",
                   "&:hover": {
@@ -183,7 +212,7 @@ export default function Home() {
                   },
                 }}
               >
-                {editIndex !== null ? "Update" : "Add"}
+                Add Item
               </Button>
             </Grid>
           </Grid>
@@ -194,6 +223,9 @@ export default function Home() {
                 <TableRow>
                   <TableCell>
                     <Typography variant="h5">Pantry Item</Typography>
+                  </TableCell>
+                  <TableCell align="center">
+                    <Typography variant="h5">Quantity</Typography>
                   </TableCell>
                   <TableCell align="center">
                     <Typography variant="h5">Edit</Typography>
@@ -207,7 +239,10 @@ export default function Home() {
                 {filteredItems.map((item, index) => (
                   <TableRow key={index}>
                     <TableCell component="th" scope="row">
-                      <Typography variant="h6">{item}</Typography>
+                      <Typography variant="h6">{item.name}</Typography>
+                    </TableCell>
+                    <TableCell component="th" scope="row" align="center">
+                      <Typography variant="h6">{item.quantity}</Typography>
                     </TableCell>
                     <TableCell align="center">
                       <IconButton
@@ -232,6 +267,52 @@ export default function Home() {
           </TableContainer>
         </Box>
       </Box>
+
+      <Modal
+        open={open}
+        onClose={handleClose}
+        aria-labelledby="modal-modal-title"
+        aria-describedby="modal-modal-description"
+      >
+        <Box sx={modalStyle}>
+          <Typography id="modal-modal-title" variant="h6" component="h2">
+            {editIndex !== null ? "Edit Item" : "Add Item"}
+          </Typography>
+          <TextField
+            fullWidth
+            id="outlined-basic"
+            label="enter item name"
+            variant="outlined"
+            value={newItem}
+            onChange={handleInputChange}
+            sx={{ mt: 2 }}
+          />
+          <Box
+            display="flex"
+            alignItems="center"
+            justifyContent="space-between"
+            sx={{ mt: 2 }}
+          >
+            <Typography variant="h6">Quantity: {quantity}</Typography>
+            <Box>
+              <Button onClick={decrementQuantity} sx={{ minWidth: "30px" }}>
+                -
+              </Button>
+              <Button onClick={incrementQuantity} sx={{ minWidth: "30px" }}>
+                +
+              </Button>
+            </Box>
+          </Box>
+          <Button
+            variant="contained"
+            fullWidth
+            onClick={handleAddClick}
+            sx={{ mt: 2, bgcolor: "#7C73C0" }}
+          >
+            {editIndex !== null ? "Update" : "Add"}
+          </Button>
+        </Box>
+      </Modal>
     </>
   );
 }
