@@ -125,31 +125,48 @@ export default function Home() {
 
   const handleAddClick = async () => {
     if (newItem.trim() !== "") {
-      
       const existingItemIndex = items.findIndex(item => item.name.toLowerCase() === newItem.toLowerCase());
       if (existingItemIndex !== -1 && editIndex === null) {
+        console.log("Updating existing item...");
+        console.log(`existingItemIndex: ${existingItemIndex}`);
+        
         const updatedItems = items.map((item, index) =>
           index === existingItemIndex ? { ...item, quantity: item.quantity + quantity } : item
         );
         setItems(updatedItems);
-        await updateDoc(doc(db,'inventory',items[existingItemIndex].id),{quantity: items[existingItemIndex].quantity+quantity});
+        
+        try {
+          await updateDoc(doc(db, 'inventory', items[existingItemIndex].id), { quantity: items[existingItemIndex].quantity + quantity });
+        } catch (error) {
+          console.error("Error updating document:", error);
+        }
       } 
       else if (editIndex !== null) {
+        console.log("Editing item...");
         const updatedItems = items.map((item, index) =>
-          index === editIndex ? { name: newItem, quantity } : item
+          index === editIndex ? {id:items[editIndex].id, name: newItem, quantity } : item
         );
         setItems(updatedItems);
-        await updateDoc(doc(db,'inventory',items[editIndex].id),{name : newItem,quantity});
+        
+        try {
+          await updateDoc(doc(db, 'inventory', items[editIndex].id), { name: newItem, quantity });
+        } catch (error) {
+          console.error("Error updating document:", error);
+        }
       } else {
-        const docRef = await addDoc(collection(db, 'inventory'), { name: newItem, quantity });
-        setItems([...items, { id: docRef.id, name: newItem, quantity }]);
+        console.log("Adding new item...");
+        try {
+          const docRef = await addDoc(collection(db, 'inventory'), { name: newItem, quantity });
+          setItems([...items, { id: docRef.id, name: newItem, quantity }]);
+        } catch (error) {
+          console.error("Error adding document:", error);
+        }
         console.log(items);
       }
       setNewItem("");
       setQuantity(1);
       setEditIndex(null);
       handleClose();
-
     }
   };
 
@@ -162,7 +179,9 @@ export default function Home() {
   };
 
   const handleDeleteClick = async (index) => {
+    console.log("deleting");
     await deleteDoc(doc(db,'inventory',items[index].id));
+    console.log("deleted");
     const newItems = [...items];
     newItems.splice(index, 1);
     setItems(newItems);
