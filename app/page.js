@@ -1,5 +1,8 @@
 "use client";
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
+import {db} from './firebase'
+import { collection, addDoc, getDocs, updateDoc, deleteDoc, doc } from "firebase/firestore";
+
 import "@fontsource/roboto/300.css";
 import "@fontsource/roboto/400.css";
 import "@fontsource/roboto/500.css";
@@ -89,7 +92,23 @@ export default function Home() {
   const [open, setOpen] = useState(false);
   const [quantity, setQuantity] = useState(1);
 
+  const fetch = async()=>{
+    const records = await getDocs(collection(db,'inventory'));
+    const itemList = records.docs.map(doc=>({
+      id: doc.id,
+      ...doc.data()
+
+    }));
+    setItems(itemList);
+  };
+  
+
+  useEffect(()=>{
+    fetch();
+  },[]);
+  
   const handleOpen = (index = null) => {
+    console.log(process.env.NEXT_PUBLIC_FIREBASE_API_KEY);
     if (index !== null) {
       setNewItem(items[index].name);
       setQuantity(items[index].quantity);
@@ -104,7 +123,7 @@ export default function Home() {
 
   const handleClose = () => setOpen(false);
 
-  const handleAddClick = () => {
+  const handleAddClick = async () => {
     if (newItem.trim() !== "") {
       
       const existingItemIndex = items.findIndex(item => item.name.toLowerCase() === newItem.toLowerCase());
@@ -113,18 +132,24 @@ export default function Home() {
           index === existingItemIndex ? { ...item, quantity: item.quantity + quantity } : item
         );
         setItems(updatedItems);
-      } else if (editIndex !== null) {
+        await updateDoc(doc(db,'inventory',items[existingItemIndex].id),{quantity: items[existingItemIndex].quantity+quantity});
+      } 
+      else if (editIndex !== null) {
         const updatedItems = items.map((item, index) =>
           index === editIndex ? { name: newItem, quantity } : item
         );
         setItems(updatedItems);
+        await updateDoc(doc(db,'inventory',items[editIndex].id),{name : newItem,quantity});
       } else {
-        setItems([...items, { name: newItem, quantity }]);
+        const docRef = await addDoc(collection(db, 'inventory'), { name: newItem, quantity });
+        setItems([...items, { id: docRef.id, name: newItem, quantity }]);
+        console.log(items);
       }
       setNewItem("");
       setQuantity(1);
       setEditIndex(null);
       handleClose();
+
     }
   };
 
@@ -136,10 +161,12 @@ export default function Home() {
     setSearchItem(event.target.value);
   };
 
-  const handleDeleteClick = (index) => {
+  const handleDeleteClick = async (index) => {
+    await deleteDoc(doc(db,'inventory',items[index].id));
     const newItems = [...items];
     newItems.splice(index, 1);
     setItems(newItems);
+    
   };
 
   const handleEditClick = (index) => {
