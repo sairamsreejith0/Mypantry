@@ -10,7 +10,7 @@ export default async function handler(req, res) {
             messages: [
                 { role: "user", content: content }
             ],
-            max_tokens: 400 
+            max_tokens: 300 
         });
 
         try {

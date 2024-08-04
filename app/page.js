@@ -113,7 +113,7 @@ export default function Home() {
           'Content-Type': 'application/json'
         },
         body: JSON.stringify({
-          content: `Give me two recipes using these ingredients: ${itemNamesString}. Please provide clear instructions and list all ingredients.`
+          content: `Give me a simple recipes using these ingredients: ${itemNamesString}`
         })
       });
 
@@ -126,7 +126,7 @@ export default function Home() {
       if (data.choices && data.choices.length > 0) {
         setResponse(data.choices[0].message.content);
       } else {
-        setResponse("No recipes found.");
+        setResponse("No recipes found!!!!!.");
       }
     } catch (error) {
       console.error('Error:', error);
