@@ -1,6 +1,6 @@
 "use client";
 import React, { useEffect, useState } from "react";
-import {db} from './firebase'
+import { db } from './firebase';
 import { collection, addDoc, getDocs, updateDoc, deleteDoc, doc } from "firebase/firestore";
 
 import "@fontsource/roboto/300.css";
@@ -26,6 +26,9 @@ import {
   InputBase,
   alpha,
   Modal,
+  Card,
+  CircularProgress,
+  CardContent
 } from "@mui/material";
 import { styled } from "@mui/material/styles";
 import SearchIcon from "@mui/icons-material/Search";
@@ -91,24 +94,64 @@ export default function Home() {
   const [searchItem, setSearchItem] = useState("");
   const [open, setOpen] = useState(false);
   const [quantity, setQuantity] = useState(1);
+  const [loading, setLoading] = useState(false);
 
-  const fetch = async()=>{
-    const records = await getDocs(collection(db,'inventory'));
-    const itemList = records.docs.map(doc=>({
+  
+  // API related state
+  const [response, setResponse] = useState('');
+  const [itemnames, setItemNames] = useState([]);
+
+  const handleSubmit = async () => {
+    setLoading(true);
+    const names = items.map(item => item.name);
+    const itemNamesString = names.join(', ');
+
+    try {
+      const res = await fetch('/api/openrouter', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+          content: `Give me two recipes using these ingredients: ${itemNamesString}. Please provide clear instructions and list all ingredients.`
+        })
+      });
+
+      if (!res.ok) {
+        throw new Error(`HTTP error! status: ${res.status}`);
+      }
+
+      const data = await res.json();
+      console.log(data);
+      if (data.choices && data.choices.length > 0) {
+        setResponse(data.choices[0].message.content);
+      } else {
+        setResponse("No recipes found.");
+      }
+    } catch (error) {
+      console.error('Error:', error);
+      setResponse(`Error: ${error.message}`);
+    }
+    finally{
+      setLoading(false);
+    }
+  };
+
+  const fetchItems = async () => {
+    const records = await getDocs(collection(db, 'inventory'));
+    const itemList = records.docs.map(doc => ({
       id: doc.id,
       ...doc.data()
-
     }));
+    console.log(itemList);
     setItems(itemList);
   };
-  
 
-  useEffect(()=>{
-    fetch();
-  },[]);
-  
+  useEffect(() => {
+    fetchItems();
+  }, []);
+
   const handleOpen = (index = null) => {
-    console.log(process.env.NEXT_PUBLIC_FIREBASE_API_KEY);
     if (index !== null) {
       setNewItem(items[index].name);
       setQuantity(items[index].quantity);
@@ -129,25 +172,24 @@ export default function Home() {
       if (existingItemIndex !== -1 && editIndex === null) {
         console.log("Updating existing item...");
         console.log(`existingItemIndex: ${existingItemIndex}`);
-        
+
         const updatedItems = items.map((item, index) =>
           index === existingItemIndex ? { ...item, quantity: item.quantity + quantity } : item
         );
         setItems(updatedItems);
-        
+
         try {
           await updateDoc(doc(db, 'inventory', items[existingItemIndex].id), { quantity: items[existingItemIndex].quantity + quantity });
         } catch (error) {
           console.error("Error updating document:", error);
         }
-      } 
-      else if (editIndex !== null) {
+      } else if (editIndex !== null) {
         console.log("Editing item...");
         const updatedItems = items.map((item, index) =>
-          index === editIndex ? {id:items[editIndex].id, name: newItem, quantity } : item
+          index === editIndex ? { id: items[editIndex].id, name: newItem, quantity } : item
         );
         setItems(updatedItems);
-        
+
         try {
           await updateDoc(doc(db, 'inventory', items[editIndex].id), { name: newItem, quantity });
         } catch (error) {
@@ -180,12 +222,11 @@ export default function Home() {
 
   const handleDeleteClick = async (index) => {
     console.log("deleting");
-    await deleteDoc(doc(db,'inventory',items[index].id));
+    await deleteDoc(doc(db, 'inventory', items[index].id));
     console.log("deleted");
     const newItems = [...items];
     newItems.splice(index, 1);
     setItems(newItems);
-    
   };
 
   const handleEditClick = (index) => {
@@ -260,8 +301,30 @@ export default function Home() {
               >
                 Add Item
               </Button>
+              
+            </Grid>
+            <Grid item xs={12} md={4}>
+              <Button
+                variant="contained"
+                fullWidth
+                onClick={() => handleSubmit()}
+                sx={{
+                  bgcolor: "#7C73C0",
+                  "&:hover": {
+                    bgcolor: "#7C73C0",
+                  },
+                }}
+              >
+               Generate Recipe
+              </Button>
+              
             </Grid>
           </Grid>
+          {loading && (
+          <Box display="flex" justifyContent="center" sx={{ mt: 4 }}>
+            <CircularProgress />
+          </Box>
+        )}
 
           <TableContainer component={Paper} style={{ marginTop: 20 }}>
             <Table aria-label="simple table">
@@ -311,6 +374,21 @@ export default function Home() {
               </TableBody>
             </Table>
           </TableContainer>
+
+          {response && (
+            <Box sx={{ mt: 4 }}>
+              <Typography variant="h5" component="h2">
+                Response
+              </Typography>
+              <Card>
+                <CardContent>
+                  <Typography variant="body1">
+                    {typeof response === 'string' ? response : JSON.stringify(response, null, 2)}
+                  </Typography>
+                </CardContent>
+              </Card>
+            </Box>
+          )}
         </Box>
       </Box>
 
