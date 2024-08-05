@@ -431,7 +431,8 @@ export default function Home() {
             variant="contained"
             fullWidth
             onClick={handleAddClick}
-            sx={{ mt: 2, bgcolor: "#7C73C0" }}
+            sx={{ mt: 2, bgcolor: "#7C73C0", "&:hover": {
+                    bgcolor: "#7C73C0" }}}
           >
             {editIndex !== null ? "Update" : "Add"}
           </Button>
