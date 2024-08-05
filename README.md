@@ -1,36 +1,30 @@
-This is a [Next.js](https://nextjs.org/) project bootstrapped with [`create-next-app`](https://github.com/vercel/next.js/tree/canary/packages/create-next-app).
 
-## Getting Started
+**Pantry Tracker Application**
+Welcome to the Pantry Tracker application! This project helps you keep track of your pantry items, edit them, delete them, search for specific items, and even generate recipes based on what's available in your pantry using the OpenAI API.
 
-First, run the development server:
+**Features**
+Add Item: Add new items to your pantry.
+Edit Item: Edit details of existing pantry items.
+Delete Item: Remove items from your pantry.
+Search for Items: Quickly find items in your pantry.
+Generate Recipes: Get recipe suggestions based on your pantry items using the OpenAI API.
 
-```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
-```
+**Technologies Used**
+**Frontend**
+Next.js: A React framework for building fast and user-friendly web applications.
+MUI (Material-UI): A popular React UI framework for building responsive and stylish user interfaces.
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+**Backend**
+Firebase: Used for authentication, real-time database, and storage.
 
-You can start editing the page by modifying `app/page.js`. The page auto-updates as you edit the file.
+**Deployment**
+Vercel: Platform for deploying the application with ease and speed.
 
-This project uses [`next/font`](https://nextjs.org/docs/basic-features/font-optimization) to automatically optimize and load Inter, a custom Google Font.
+**dependencies**
+npm install @mui/material @emotion/react @emotion/styled
+npm install firebase
 
-## Learn More
-
-To learn more about Next.js, take a look at the following resources:
-
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
-
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js/) - your feedback and contributions are welcome!
-
-## Deploy on Vercel
-
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/deployment) for more details.
+**how to create NextJS app**
+npx create-next-app@latest pantry-tracker
+cd pantry-tracker
+to run - npm run dev
